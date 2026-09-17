@@ -1,0 +1,25 @@
+# Nilai internal role: daftar layanan/paket/kernel params yang direferensikan
+# task. Sebagian disesuaikan per family OS (RedHat vs Debian) di task.
+hardening_sysctl:
+  net.ipv4.ip_forward: 0
+  net.ipv4.conf.all.send_redirects: 0
+  net.ipv4.conf.default.send_redirects: 0
+  net.ipv4.conf.all.accept_redirects: 0
+  net.ipv4.conf.default.accept_redirects: 0
+  net.ipv4.conf.all.secure_redirects: 0
+  net.ipv4.conf.default.secure_redirects: 0
+  net.ipv4.tcp_syncookies: 1
+  kernel.randomize_va_space: 2
+  kernel.core_uses_pid: 1
+  fs.suid_dumpable: 0
+
+hardening_disabled_services:
+  - telnet.socket
+  - rlogin.socket
+  - rsh.socket
+  - ftp
+  - rpcbind
+
+hardening_required_packages:
+  chrony: chronyd
+  auditd: auditd

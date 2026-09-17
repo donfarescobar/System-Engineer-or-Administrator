@@ -1,0 +1,4 @@
+# Managed by Ansible -- jangan diedit manual
+{% for key, value in hardening_sysctl.items() %}
+{{ key }} = {{ value }}
+{% endfor %}

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: digital-channel
+  labels:
+    app.kubernetes.io/name: auth-service
+spec:
+  selector:
+    app.kubernetes.io/name: auth-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

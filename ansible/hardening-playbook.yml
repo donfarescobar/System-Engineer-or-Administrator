@@ -1,0 +1,7 @@
+---
+- name: Hardening baseline server Linux
+  hosts: all
+  become: true
+  gather_facts: true
+  roles:
+    - role: hardening_os

@@ -1,0 +1,105 @@
+name: CI - Shift-Left Security dan Validasi IaC
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint YAML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install yamllint
+        run: pip install yamllint
+      - name: Jalankan yamllint
+        run: yamllint .
+
+  gitleaks:
+    name: Secret scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  terraform:
+    name: Terraform fmt + validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive
+      - name: Terraform init (tanpa backend)
+        run: terraform init -backend=false -input=false
+      - name: Terraform validate
+        run: terraform validate -no-color
+
+  iac-security:
+    name: Scank keamanan IaC (checkov + trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: terraform
+      - name: Trivy config scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          scan-ref: terraform
+          format: table
+          exit-code: "1"
+          severity: HIGH,CRITICAL
+
+  ansible:
+    name: Ansible syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ansible-core
+        run: pip install "ansible-core>=2.16,<2.19"
+      - name: Syntax check playbook hardening
+        run: >-
+          ansible-playbook -i ansible/inventory/example.ini
+          --syntax-check ansible/hardening-playbook.yml
+
+  kubernetes:
+    name: Validasi manifest Kubernetes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint YAML manifest
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install yamllint
+        run: pip install yamllint
+      - name: yamllint kubernetes
+        run: yamllint kubernetes/
+      - name: Validasi skema resource
+        uses: yannh/kubeconform@master
+        with:
+          files: "kubernetes/digital-channel/base kubernetes/digital-channel/services"
