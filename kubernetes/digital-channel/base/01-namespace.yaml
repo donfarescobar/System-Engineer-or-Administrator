@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: digital-channel
+  labels:
+    app.kubernetes.io/part-of: banking-portfolio
+    # Pod Security Standards profile "restricted" (hardening-baseline.md bab 4)
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted

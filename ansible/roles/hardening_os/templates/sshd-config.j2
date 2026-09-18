@@ -1,0 +1,11 @@
+# Managed by Ansible -- jangan diedit manual
+# Acuan: docs/security/hardening-baseline.md paragraf 2
+Port {{ hardening_sshd_port }}
+PermitRootLogin {{ hardening_sshd_permit_root_login }}
+PasswordAuthentication {{ hardening_sshd_password_authentication }}
+PubkeyAuthentication yes
+MaxAuthTries {{ hardening_sshd_max_auth_tries }}
+Protocol 2
+X11Forwarding no
+ClientAliveInterval 300
+ClientAliveCountMax 2

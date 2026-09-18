@@ -1,0 +1,84 @@
+---
+- name: Tolak OS di luar dukungan role
+  ansible.builtin.fail:
+    msg: "OS family '{{ ansible_os_family }}' tidak didukung. Gunakan RedHat atau Debian family."
+  when: ansible_os_family not in ['RedHat', 'Debian']
+
+- name: Update seluruh paket saat mode patch (hardening_update_packages=true)
+  when: hardening_update_packages | bool
+  block:
+    - name: Update paket (RedHat)
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+        update_cache: true
+      when: ansible_os_family == 'RedHat'
+
+    - name: Update paket (Debian)
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: true
+      when: ansible_os_family == 'Debian'
+
+- name: Instal paket dasar pendukung
+  ansible.builtin.package:
+    name: chrony
+    state: present
+
+- name: Pasang audit (RedHat)
+  ansible.builtin.package:
+    name: audit
+    state: present
+  when: ansible_os_family == 'RedHat'
+
+- name: Pasang auditd (Debian)
+  ansible.builtin.package:
+    name: auditd
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Aktifkan auditd
+  ansible.builtin.systemd:
+    name: auditd
+    state: started
+    enabled: true
+
+- name: Konfigurasi sshd (hardening)
+  ansible.builtin.template:
+    src: sshd-config.j2
+    dest: /etc/ssh/sshd_config.d/99-hardening.conf
+    owner: root
+    group: root
+    mode: "0600"
+    validate: "/usr/sbin/sshd -t -f %s"
+  notify: Restart sshd
+
+- name: Terapkan parameter kernel (sysctl)
+  ansible.builtin.template:
+    src: sysctl-hardening.j2
+    dest: /etc/sysctl.d/99-hardening.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload sysctl
+
+- name: Kumpulkan daftar unit service yang ada
+  ansible.builtin.service_facts:
+  when:
+    - ansible_system == 'Linux'
+
+- name: Nonaktifkan layanan yang terpasang dan tidak terpakai
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: false
+    masked: true
+    state: stopped
+  loop: "{{ hardening_disabled_services }}"
+  when: item in ansible_facts.services
+  ignore_errors: false
+
+- name: Aktifkan sinkronisasi waktu (chronyd / chrony)
+  ansible.builtin.systemd:
+    name: "{{ 'chronyd' if ansible_os_family == 'RedHat' else 'chrony' }}"
+    state: started
+    enabled: true

@@ -1,0 +1,32 @@
+# NetworkPolicy untuk transfer-orchestrator.
+# Ingress: hanya dari pod berlabel network-policy/access=allowed (gateway).
+# Egress: hanya ke namespace messaging (Kafka broker, port 9093 TLS).
+# Komunikasi lain diblokir oleh policy default-deny di namespace (base/).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: transfer-orchestrator
+  namespace: digital-channel
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: transfer-orchestrator
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              network-policy/access: allowed
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: messaging
+      ports:
+        - protocol: TCP
+          port: 9093

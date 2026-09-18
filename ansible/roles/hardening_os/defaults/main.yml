@@ -1,0 +1,8 @@
+# Baseline hardening server Linux (lihat docs/security/hardening-baseline.md).
+# Nilai di file ini adalah nilai default; override per lingkungan di
+# ansible/group_vars/*.yml atau extra_vars dari pipeline.
+hardening_sshd_port: 22
+hardening_sshd_permit_root_login: "no"
+hardening_sshd_password_authentication: "no"
+hardening_sshd_max_auth_tries: 5
+hardening_update_packages: false
