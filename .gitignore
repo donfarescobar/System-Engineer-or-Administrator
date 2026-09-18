@@ -18,6 +18,7 @@ ansible/inventory/*_local.ini
 *.pem
 *.key
 *.p12
+envs/
 
 # Python
 __pycache__/
@@ -28,3 +29,6 @@ __pycache__/
 .idea/
 .vscode/
 *.swp
+SKILL.md
+AGENTS.md
+.kilo/
