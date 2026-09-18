@@ -42,7 +42,7 @@ jobs:
         with:
           terraform_version: "1.9.8"
       - name: Konfigurasi credential AWS (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_IAC }}
           aws-region: ap-southeast-3
@@ -87,7 +87,7 @@ jobs:
         with:
           terraform_version: "1.9.8"
       - name: Konfigurasi credential AWS (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_IAC }}
           aws-region: ap-southeast-3
